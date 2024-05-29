@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper</title>
+    <style>
+        .cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    지뢰게임
+<script>
+    let rows = 8;
+    let cols = 8;
+    let grid = [];
+    let gameover = false;
+
+    function revealCell(row, col) {
+        const cell = grid[row][col];
+        if (!gameover) {
+            if (cell.isMine) {
+                document.getElementById(`${row}-${col}`).innerText = "💣";
+                gameover = true;
+                revealAll();
+            } else {
+                let count = 0;
+                for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
+                    for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
+                        if (grid[i][j].isMine) count++;
+                    }
+                }
+                document.getElementById(`${row}-${col}`).innerText = count;
+                cell.isRevealed = true;
+            }
+        }
+    }
+
+    function revealAll() {
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                const cell = grid[i][j];
+                if (cell.isMine) {
+                    document.getElementById(`${i}-${j}`).innerText = "💣";
+                } else {
+                    let count = 0;
+                    for (let x = Math.max(0, i - 1); x <= Math.min(rows - 1, i + 1); x++) {
+                        for (let y = Math.max(0, j - 1); y <= Math.min(cols - 1, j + 1); y++) {
+                            if (grid[x][y].isMine) count++;
+                        }
+                    }
+                    document.getElementById(`${i}-${j}`).innerText = count;
+                }
+            }
+        }
+    }
+
+    function restartGame() {
+        // Reset game state
+        gameover = false;
+        // Clear the grid
+        grid = [];
+        const gridContainer = document.querySelector("#gridContainer");
+        gridContainer.innerHTML = "";
+        // Re-create the grid
+        for (let i = 0; i < rows; i++) {
+            grid[i] = [];
+            for (let j = 0; j < cols; j++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.id = `${i}-${j}`;
+                cell.addEventListener("click", () => {
+                    if (!grid[i][j].isRevealed) {
+                        revealCell(i, j);
+                    }
+                });
+                gridContainer.appendChild(cell);
+                grid[i][j] = { isMine: Math.random() < 0.2, isRevealed: false };
+            }
+            gridContainer.appendChild(document.createElement("br"));
+        }
+    }
+
+    function chooseGridSize(size) {
+        // Set rows and cols based on chosen size
+        if (size === "small") {
+            rows = 8;
+            cols = 8;
+        } else if (size === "medium") {
+            rows = 20;
+            cols = 20;
+        } else if (size === "large") {
+            rows = 35;
+            cols = 35;
+        }
+        restartGame();
+    }
+
+    const gridContainer = document.createElement("div");
+    gridContainer.id = "gridContainer";
+    document.body.appendChild(gridContainer);
+
+    const restartButton = document.createElement("button");
+    restartButton.textContent = "다시 시작";
+    restartButton.addEventListener("click", restartGame);
+    document.body.appendChild(restartButton);
+
+    const sizeSelector = document.createElement("select");
+    sizeSelector.innerHTML = `
+        <option value="small">8x8</option>
+        <option value="medium">20x20</option>
+        <option value="large">35x35</option>
+    `;
+    sizeSelector.addEventListener("change", (event) => chooseGridSize(event.target.value));
+    document.body.appendChild(sizeSelector);
+
+    restartGame(); // Start the game with default size (8x8)
+    function revealCell(row, col) {
+    const cell = grid[row][col];
+    if (!gameover) {
+        if (cell.isMine) {
+            document.getElementById(`${row}-${col}`).innerText = "💣";
+            gameover = true;
+            revealAll();
+        } else if (!cell.isRevealed) {
+            let count = 0;
+            for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
+                for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
+                    if (grid[i][j].isMine) count++;
+                }
+            }
+            if (count === 0) {
+                document.getElementById(`${row}-${col}`).innerText = count;
+                cell.isRevealed = true;
+                for (let i = Math.max(0, row - 1); i <= Math.min(rows - 1, row + 1); i++) {
+                    for (let j = Math.max(0, col - 1); j <= Math.min(cols - 1, col + 1); j++) {
+                        if (!grid[i][j].isRevealed) {
+                            revealCell(i, j);
+                        }
+                    }
+                }
+            } else {
+                document.getElementById(`${row}-${col}`).innerText = count;
+                cell.isRevealed = true;
+            }
+        }
+    }
+}
+</script>
+
+</body>
+</html>
